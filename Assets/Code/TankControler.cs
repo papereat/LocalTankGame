@@ -11,11 +11,15 @@ public class TankControler : MonoBehaviour
     public Tile EmptyTile;
     public Tile TankTile;
     public TextMeshPro StatText;
+    public Transform RangeShower;
+    public TextMeshPro NameText;
     [Header("Stats")]
     public string Name;
+    public int TankRange;
     public Vector2Int Pos;
     public int Health;
     public int ActionPoints;
+    public Color TankColor;
     // Start is called before the first frame update
     void Start()
     {
@@ -32,6 +36,10 @@ public class TankControler : MonoBehaviour
     void UpdateUI()
     {
         StatText.text=ActionPoints.ToString()+":"+Health.ToString();
+        RangeShower.localScale=new Vector3(1+2*TankRange,1+2*TankRange,1);
+        RangeShower.GetComponent<SpriteRenderer>().color=new Color(TankColor.r,TankColor.g,TankColor.b,0.5f);
+        NameText.text=Name;
+        NameText.color=TankColor;
     }
     void SetCurrentTileToTank()
     {

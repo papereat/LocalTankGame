@@ -12,6 +12,8 @@ public class WorldCreator : MonoBehaviour
     [Header("Settings")]
     public GameObject TankPrefab;
     public int StartingHealth;
+    public int StartingTankRange;
+
     public int StartingActionPoints;
     public Vector2Int worldSize;
     
@@ -37,7 +39,10 @@ public class WorldCreator : MonoBehaviour
 
         tankControler.Health=StartingHealth;
         tankControler.ActionPoints=StartingActionPoints;
+        tankControler.TankRange=StartingTankRange;
+
         tankControler.tm=tm;
+        tankControler.TankColor=Color.HSVToRGB(Random.Range(0,1f),Random.Range(0,1f),Random.Range(0.5f,1f));
 
         while (true)
         {
