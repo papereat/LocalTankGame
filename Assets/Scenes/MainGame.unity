@@ -701,8 +701,8 @@ MonoBehaviour:
   TankTile: {fileID: 11400000, guid: 5057d17e49d20a04293deee8b9440b1c, type: 2}
   TankPrefab: {fileID: 7232831532169255020, guid: 626af0e947f4f5c4ab670e6b20484953, type: 3}
   StartingHealth: 5
-  StartingTankRange: 0
-  StartingActionPoints: 3
+  StartingTankRange: 4
+  StartingActionPoints: 1
   worldSize: {x: 3, y: 3}
   tankControlers: []
 --- !u!4 &343455907
@@ -19276,7 +19276,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1839783563}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 957671227}
+        m_TargetAssemblyTypeName: HostControler, Assembly-CSharp
+        m_MethodName: AttackButtonPressed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1839783563
 MonoBehaviour:
   m_ObjectHideFlags: 0

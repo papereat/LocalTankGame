@@ -25,6 +25,7 @@ public class WorldCreator : MonoBehaviour
     {
         CreateTank();
         CreateTank();
+        CreateTank();
     }
 
     // Update is called once per frame

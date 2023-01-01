@@ -147,6 +147,27 @@ public class HostControler : MonoBehaviour
     {
         inTextField=false;
     }
+    public void AttackButtonPressed()
+    {
+        if(DistanceBetweenPos(tankControlers[CurrentTank].Pos,tankControlers[selectedOponent].Pos)<=tankControlers[CurrentTank].TankRange)
+        {
+            //In range to attack
+            //instant Attack
+
+            tankControlers[CurrentTank].Attack((int)DamageAmountSlider.value);
+            tankControlers[selectedOponent].BeAttack((int)DamageAmountSlider.value);
+        }
+        else
+        {
+            //Not in range to attack
+        }
+    }
+    int DistanceBetweenPos(Vector2Int a,Vector2Int b)
+    {
+        int distance=Mathf.Max(Mathf.Abs(a.y-b.y),Mathf.Abs(a.x-b.x));
+
+        return distance;
+    }
     public void Inputs()
     {
         //Q and E
@@ -188,7 +209,7 @@ public class HostControler : MonoBehaviour
             {
                 if(tm.GetTile(new Vector3Int(SelectedTile.x,SelectedTile.y,0))==EmptyTile)
                 {
-                    if(tankControlers[CurrentTank].ActionPoints<=CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost))
+                    if(tankControlers[CurrentTank].ActionPoints>=CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost))
                     {
                         AskingForMovement=true;
                     }

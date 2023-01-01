@@ -56,4 +56,12 @@ public class TankControler : MonoBehaviour
         ActionPoints-=ActionPointCost;
         SetCurrentTileToTank();
     }
+    public void Attack(int ActionPointsUsed)
+    {
+        ActionPoints-=ActionPointsUsed;
+    }
+    public void BeAttack(int HealthLost)
+    {
+        Health-=HealthLost;
+    }
 }
