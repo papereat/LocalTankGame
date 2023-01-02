@@ -20,8 +20,9 @@ public class HostControler : MonoBehaviour
     public Image ColorImage;
     public Transform SelectedTileUI;
     public Transform CurrentTileUI;
-    public GameObject MovementAskingObject;
-    public TextMeshProUGUI MovementCostText;
+    public GameObject ConfirmationObject;
+    public TextMeshProUGUI ConfirmationText;
+    public TextMeshProUGUI ConfirmationCostText;
     public GameObject OponentMenu;
     public TextMeshProUGUI OpoenentMenuName;
     public TextMeshProUGUI OpoenentMenuHealthValue;
@@ -31,20 +32,36 @@ public class HostControler : MonoBehaviour
     public TextMeshProUGUI OpoenentMeneDamageAmountValue;
     public Slider TradingAmountSlider;
     public Slider DamageAmountSlider;
+    public GameObject AlertPannel;
+    public TextMeshProUGUI AlertPannelText;
+    public TextMeshProUGUI AlertPannelButtonText;
+    public GameObject YouPannelObject;
+    public TextMeshProUGUI CurrentRangeText;
+    public TextMeshProUGUI UpgradeCosts;
 
     [Header("Stats")]
+    public bool TradingEnabled;
+    public bool UpgradeEnabled;
+    public int UpgradeRangeCost;
+    public int MaxRange;
     public int MovementCost;
+    public int AttackCost;
     [Header("Debug")]
     public Vector2 DebugPos;
 
 
     [SerializeField]
+    bool YouPannelOpen;
+    bool ConfirmationPanelOpen;
+    int ConfirmationPannelType;
+    
+    bool AlertPannelOpen;
     bool OponentMenuOpen;
-    [SerializeField]
+    
     int selectedOponent;
-    bool AskingForMovement;
     int CurrentTank=0;
     bool tileIsSelected=false;
+    [SerializeField]
     Vector2Int SelectedTile;
     bool inTextField;
     void Awake()
@@ -59,6 +76,22 @@ public class HostControler : MonoBehaviour
         DebugPos=GetMousePos();
         Inputs();
         UpdateUI();
+    }
+    void OpenConfimationPanel(string MainText,string SecondaryText,int type)
+    {
+        ConfirmationObject.SetActive(true);
+        ConfirmationPanelOpen=true;
+        ConfirmationPannelType=type;
+        
+        ConfirmationText.text=MainText;
+        ConfirmationCostText.text=SecondaryText;
+    }
+    void AlertMenuOpen(string MainText,string ButtonText)
+    {
+        AlertPannelOpen=true;
+        AlertPannel.SetActive(true);
+        AlertPannelText.text=MainText;
+        AlertPannelButtonText.text=ButtonText;
     }
     void UpdateUI()
     {
@@ -82,28 +115,35 @@ public class HostControler : MonoBehaviour
         Vector3 MouseTilPos=tm.CellToWorld(new Vector3Int(GetMousePos().x,GetMousePos().y,0));
         CurrentTileUI.position=new Vector3(MouseTilPos.x+0.5f,MouseTilPos.y+0.5f,0);
 
-        if(AskingForMovement)
+        if(YouPannelOpen)
         {
-            MovementAskingObject.SetActive(true);
-            MovementCostText.text="Cost: "+CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost).ToString();
+            //Show YOu Pannel
+            YouPannelObject.SetActive(true);
+            //Put Range
+            CurrentRangeText.text="Range: "+tankControlers[CurrentTank].TankRange.ToString();
+            //Price
+            UpgradeCosts.text="Upgrade Costs: "+UpgradeRangeCost.ToString();
         }
         else
         {
-            MovementAskingObject.SetActive(false);
+            YouPannelObject.SetActive(false);
         }
-
         if(OponentMenuOpen)
         {
+            //Show Meny
             OponentMenu.SetActive(true);
+            //Show oponent stats
             OpoenentMenuName.text=tankControlers[selectedOponent].Name;
             OpoenentMenuName.color=tankControlers[selectedOponent].TankColor;
             OpoenentMenuHealthValue.text=tankControlers[selectedOponent].Health.ToString();
             OpoenentMeneActionPointsValue.text=tankControlers[selectedOponent].ActionPoints.ToString();
             OpoenentMeneRangeValue.text=tankControlers[selectedOponent].TankRange.ToString();
+            //Slider Stuff
             OpoenentMeneTradingAmountValue.text=TradingAmountSlider.value.ToString();
             OpoenentMeneDamageAmountValue.text=DamageAmountSlider.value.ToString();
+            //Max Value for Sliders
             TradingAmountSlider.maxValue=tankControlers[CurrentTank].ActionPoints;
-            DamageAmountSlider.maxValue=Mathf.Min(tankControlers[selectedOponent].Health,tankControlers[CurrentTank].ActionPoints);
+            DamageAmountSlider.maxValue=Mathf.Min(tankControlers[selectedOponent].Health, Mathf.FloorToInt(tankControlers[CurrentTank].ActionPoints/AttackCost));
         }
         else
         {
@@ -111,16 +151,47 @@ public class HostControler : MonoBehaviour
         }
 
     }
-    public void MovementQuestionInput(bool Accepted)
+    public void ConfirmationButtonPressed(bool Accepted)
     {
-        AskingForMovement=false;
-        if(Accepted)
+        ConfirmationPanelOpen=false;
+        
+        if(ConfirmationPannelType==0)
         {
-            int movCost=CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost);
-            tankControlers[CurrentTank].Move(SelectedTile,movCost);
-            Debug.Log(movCost);
-            tileIsSelected=false;
+            //Movement
+            if(Accepted)
+            {
+                int movCost=CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost);
+                tankControlers[CurrentTank].Move(SelectedTile,movCost);
+                Debug.Log(movCost);
+                tileIsSelected=false;
+            }
         }
+        else if(ConfirmationPannelType==1)
+        {
+            if(Accepted)
+            {
+                tankControlers[CurrentTank].Attack((int)DamageAmountSlider.value,AttackCost);
+                tankControlers[selectedOponent].BeAttack((int)DamageAmountSlider.value);
+            }
+        }
+        else if(ConfirmationPannelType==2)
+        {
+            //trade
+            if(Accepted)
+            {
+                tankControlers[CurrentTank].Donate((int)TradingAmountSlider.value);
+                tankControlers[selectedOponent].ReciveActionPoints((int)TradingAmountSlider.value);
+            }
+        }
+        else if(ConfirmationPannelType==3)
+        {
+            //Range Upgrade
+            if(Accepted)
+            {
+                tankControlers[CurrentTank].UpgradeRange(UpgradeRangeCost);
+            }
+        }
+        ConfirmationObject.SetActive(false);
     }
     public void ChangeTankName()
     {
@@ -153,20 +224,63 @@ public class HostControler : MonoBehaviour
         {
             //In range to attack
             //instant Attack
-
-            tankControlers[CurrentTank].Attack((int)DamageAmountSlider.value);
-            tankControlers[selectedOponent].BeAttack((int)DamageAmountSlider.value);
+            OpenConfimationPanel("Are you sure you want to attack","Cost: "+((int)DamageAmountSlider.value*AttackCost).ToString(),1);
+            
         }
         else
         {
             //Not in range to attack
+            AlertMenuOpen("Player Out of Range","OK");
         }
+    }
+    public void UpgradeButtonPressed()
+    {
+        if(UpgradeEnabled)
+        {
+            if(tankControlers[CurrentTank].TankRange<MaxRange||MaxRange==-1)
+            {
+                if(tankControlers[CurrentTank].ActionPoints>=UpgradeRangeCost)
+                {
+                    OpenConfimationPanel("Are you sure you want to upgrade","Cost: "+UpgradeRangeCost.ToString(),3);
+                }
+                else
+                {
+                    AlertMenuOpen("Can't afford Upgrade","OK");
+                }
+            }
+            else
+            {
+                AlertMenuOpen("You are at Max Range","Ok");
+            }
+        }
+        else
+        {
+            AlertMenuOpen("Upgrading Range is Not Enabled","OK");
+        }
+        
+    }
+    public void DonateButtonPressed()
+    {
+        if(TradingEnabled)
+        {
+            OpenConfimationPanel("Are you sure you want to Trade","Cost: "+((int)TradingAmountSlider.value*AttackCost).ToString(),2);
+        }
+        else
+        {
+            AlertMenuOpen("Trading is disabled","OK");
+        }
+        
     }
     int DistanceBetweenPos(Vector2Int a,Vector2Int b)
     {
         int distance=Mathf.Max(Mathf.Abs(a.y-b.y),Mathf.Abs(a.x-b.x));
 
         return distance;
+    }
+    public void CloseAlertMenu()
+    {
+        AlertPannelOpen=false;
+        AlertPannel.SetActive(false);
     }
     public void Inputs()
     {
@@ -179,7 +293,7 @@ public class HostControler : MonoBehaviour
                 tileIsSelected=false;
                 CurrentTank=tankControlers.Count-1;
             }
-            AskingForMovement=false;
+
         }
         if(Input.GetKeyDown(KeyCode.E)&&!inTextField)
         {
@@ -189,11 +303,13 @@ public class HostControler : MonoBehaviour
                 tileIsSelected=false;
                 CurrentTank=0;
             }
-            AskingForMovement=false;
         }
         if(Input.GetKeyDown(KeyCode.Space))
         {
-
+            if(AlertPannelOpen)
+            {
+                CloseAlertMenu();
+            }
         }
         if(Input.GetKeyDown(KeyCode.Escape))
         {
@@ -201,9 +317,17 @@ public class HostControler : MonoBehaviour
             {
                 OponentMenuOpen=false;
             }
+            if(YouPannelOpen)
+            {
+                YouPannelOpen=false;
+            }
+            if(AlertPannelOpen)
+            {
+                CloseAlertMenu();
+            }
         }
         //Click
-        if(Input.GetKeyDown(KeyCode.Mouse0)&&!AskingForMovement&&!OponentMenuOpen)
+        if(Input.GetKeyDown(KeyCode.Mouse0)&&!ConfirmationPanelOpen&&!OponentMenuOpen&&!AlertPannelOpen&&!YouPannelOpen)
         {
             if(GetMousePos()==SelectedTile&&tileIsSelected)
             {
@@ -211,11 +335,11 @@ public class HostControler : MonoBehaviour
                 {
                     if(tankControlers[CurrentTank].ActionPoints>=CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost))
                     {
-                        AskingForMovement=true;
+                        OpenConfimationPanel("Are you sure you want to move","Cost: "+CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost).ToString(),0);
                     }
                     else
                     {
-                        //Cant move Too Little Action Points
+                        AlertMenuOpen("You can't afford to move here\nCost: "+CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost).ToString()+" You Have: "+tankControlers[CurrentTank].ActionPoints.ToString(),"OK");
                     }
                 }
                 else 
@@ -223,10 +347,18 @@ public class HostControler : MonoBehaviour
                     int x=0;
                     while (x<tankControlers.Count)
                     {
-                        if(tankControlers[x].Pos==SelectedTile&&x!=CurrentTank)
+                        if(tankControlers[x].Pos==SelectedTile)
                         {
-                            selectedOponent=x;
-                            OponentMenuOpen=true;
+                            if(x!=CurrentTank)
+                            {
+                                selectedOponent=x;
+                                OponentMenuOpen=true;
+                            }
+                            else
+                            {
+                                YouPannelOpen=true;   
+                            }
+                            
                             
                             
                         }

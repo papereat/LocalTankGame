@@ -56,9 +56,22 @@ public class TankControler : MonoBehaviour
         ActionPoints-=ActionPointCost;
         SetCurrentTileToTank();
     }
-    public void Attack(int ActionPointsUsed)
+    public void Attack(int AttacksDone,int AttackCose)
     {
-        ActionPoints-=ActionPointsUsed;
+        ActionPoints-=AttacksDone*AttacksDone;
+    }
+    public void UpgradeRange(int UpgradeCost)
+    {
+        ActionPoints-=UpgradeCost;
+        TankRange++;
+    }
+    public void Donate(int ActionPointsDonated)
+    {
+        ActionPoints-=ActionPointsDonated;
+    }
+    public void ReciveActionPoints(int ActionpointsRecieved)
+    {
+        ActionPoints+=ActionpointsRecieved;
     }
     public void BeAttack(int HealthLost)
     {
