@@ -41,6 +41,10 @@ public class TankControler : MonoBehaviour
         NameText.text=Name;
         NameText.color=TankColor;
     }
+    public void NextRound(int ActionPointsGained)
+    {
+        ActionPoints+=ActionPointsGained;
+    }
     void SetCurrentTileToTank()
     {
         tm.SetTile(new Vector3Int(Pos.x,Pos.y,0),TankTile);
@@ -58,7 +62,7 @@ public class TankControler : MonoBehaviour
     }
     public void Attack(int AttacksDone,int AttackCose)
     {
-        ActionPoints-=AttacksDone*AttacksDone;
+        ActionPoints-=AttacksDone*AttackCose;
     }
     public void UpgradeRange(int UpgradeCost)
     {

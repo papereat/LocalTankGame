@@ -40,6 +40,7 @@ public class HostControler : MonoBehaviour
     public TextMeshProUGUI UpgradeCosts;
 
     [Header("Stats")]
+    public int ActionPointsGainedPerRound;
     public bool TradingEnabled;
     public bool UpgradeEnabled;
     public int UpgradeRangeCost;
@@ -92,6 +93,13 @@ public class HostControler : MonoBehaviour
         AlertPannel.SetActive(true);
         AlertPannelText.text=MainText;
         AlertPannelButtonText.text=ButtonText;
+    }
+    void NextRound()
+    {
+        foreach (var item in tankControlers)
+        {
+            item.NextRound(ActionPointsGainedPerRound);
+        }
     }
     void UpdateUI()
     {
@@ -294,6 +302,10 @@ public class HostControler : MonoBehaviour
                 CurrentTank=tankControlers.Count-1;
             }
 
+        }
+        if(Input.GetKeyDown(KeyCode.Tab))
+        {
+            NextRound();
         }
         if(Input.GetKeyDown(KeyCode.E)&&!inTextField)
         {

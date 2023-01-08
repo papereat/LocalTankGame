@@ -700,7 +700,7 @@ MonoBehaviour:
   EmptyTile: {fileID: 11400000, guid: 71036fb3a10bcc24595ae47d70f91fe7, type: 2}
   TankTile: {fileID: 11400000, guid: 5057d17e49d20a04293deee8b9440b1c, type: 2}
   TankPrefab: {fileID: 7232831532169255020, guid: 626af0e947f4f5c4ab670e6b20484953, type: 3}
-  StartingHealth: 5
+  StartingHealth: 10
   StartingTankRange: 1
   StartingActionPoints: 3
   worldSize: {x: 3, y: 3}
@@ -17886,6 +17886,7 @@ MonoBehaviour:
   YouPannelObject: {fileID: 726881050}
   CurrentRangeText: {fileID: 1130536428}
   UpgradeCosts: {fileID: 1697477661}
+  ActionPointsGainedPerRound: 1
   TradingEnabled: 1
   UpgradeEnabled: 1
   UpgradeRangeCost: 2
