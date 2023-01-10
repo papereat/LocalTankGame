@@ -7,6 +7,7 @@ using UnityEngine.Tilemaps;
 
 public class WorldCreator : MonoBehaviour
 {
+    public static WorldCreator current;
     #region Other Objects
         [Header("Refrences")]
         public Tilemap tm;
@@ -62,12 +63,17 @@ public class WorldCreator : MonoBehaviour
 
 
     #region  Built in Func
-    void Start()
+    void Awake()
     {
-
+        current=this;
     }
     #endregion
 
+    public void SwichUI()
+    {
+        SetupUI.SetActive(false);
+        InGameUI.SetActive(true);
+    }
     #region  Object Generator
         public void CreateWorld()
         {
@@ -81,8 +87,7 @@ public class WorldCreator : MonoBehaviour
             CreateTanks();
 
             //Change UI
-            SetupUI.SetActive(false);
-            InGameUI.SetActive(true);
+            SwichUI();
 
             //Alert Host Controler
             HostControler.current.GameStarted=true;
@@ -212,7 +217,7 @@ public class WorldCreator : MonoBehaviour
             HostControler.current.tankControlers.Add(tankControler);
         }
 
-        void CreateTilemap()
+        public void CreateTilemap()
         {
             for (int x = -worldSize.x; x < worldSize.x; x++)
             {

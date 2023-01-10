@@ -11,6 +11,7 @@ public class GameSaveData
         public string Name;
     #endregion
     #region Host Save Data
+        public Vector2Int worldSize;
         public int TradingFine;
         public int ActionPointsGainedPerRound;
         public bool TradingEnabled;
