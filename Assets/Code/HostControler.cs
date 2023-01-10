@@ -611,25 +611,35 @@ public class HostControler : MonoBehaviour
         }
         IEnumerator CameraLerpToTank(float Time,float timeBetweenRuns)
         {
+            //Get position of tank aka  place I want camera to go to
             Vector2 TankPosition=tm.CellToWorld(new Vector3Int(tankControlers[CurrentTank].Pos.x,tankControlers[CurrentTank].Pos.y,0));
             Vector3 LerpTo=new Vector3(TankPosition.x,TankPosition.y,mainCamera.transform.position.z);
 
+            //for while loop
             float x=timeBetweenRuns/Time;
 
+
+            
+            //if Time =0 than isntantaly telaprot
             if(Time==0)
             {
                 x=1;
             }
             while (true)
             {
+                //do the lerp
                 mainCamera.transform.position=Vector3.Lerp(mainCamera.transform.position,LerpTo,x);
+
+                //increment x
                 x+=timeBetweenRuns/Time;
 
+                //if x greater than 1 stop
                 if(x>=1)
                 {
                     break;
                 }
-
+                
+                //wait exactaly timeBetweenRuns seconds than run again from while loop
                 yield return new WaitForSeconds(timeBetweenRuns);
             }
         }
