@@ -8,383 +8,667 @@ using TMPro;
 public class HostControler : MonoBehaviour
 {
     public static HostControler current;
-    [Header("refrences")]
-    public Tilemap tm;
-    public Camera mainCamera;
-    public Tile EmptyTile;
-    public Tile TankTile;
-    public List<TankControler> tankControlers;
-    public TextMeshProUGUI HealthText;
-    public TextMeshProUGUI ActionPointsText;
-    public TMP_InputField NameInput;
-    public Image ColorImage;
-    public Transform SelectedTileUI;
-    public Transform CurrentTileUI;
-    public GameObject ConfirmationObject;
-    public TextMeshProUGUI ConfirmationText;
-    public TextMeshProUGUI ConfirmationCostText;
-    public GameObject OponentMenu;
-    public TextMeshProUGUI OpoenentMenuName;
-    public TextMeshProUGUI OpoenentMenuHealthValue;
-    public TextMeshProUGUI OpoenentMeneActionPointsValue;
-    public TextMeshProUGUI OpoenentMeneRangeValue;
-    public TextMeshProUGUI OpoenentMeneTradingAmountValue;
-    public TextMeshProUGUI OpoenentMeneDamageAmountValue;
-    public Slider TradingAmountSlider;
-    public Slider DamageAmountSlider;
-    public GameObject AlertPannel;
-    public TextMeshProUGUI AlertPannelText;
-    public TextMeshProUGUI AlertPannelButtonText;
-    public GameObject YouPannelObject;
-    public TextMeshProUGUI CurrentRangeText;
-    public TextMeshProUGUI UpgradeCosts;
-
-    [Header("Stats")]
-    public int ActionPointsGainedPerRound;
-    public bool TradingEnabled;
-    public bool UpgradeEnabled;
-    public int UpgradeRangeCost;
-    public int MaxRange;
-    public int MovementCost;
-    public int AttackCost;
-    [Header("Debug")]
-    public Vector2 DebugPos;
-
-
-    [SerializeField]
-    bool YouPannelOpen;
-    bool ConfirmationPanelOpen;
-    int ConfirmationPannelType;
     
-    bool AlertPannelOpen;
-    bool OponentMenuOpen;
+    #region Other Objects
+        [Header("refrences")]
+        public Tilemap tm;
+        Camera mainCamera;
+        public Tile EmptyTile;
+        public Tile TankTile;
+        public List<TankControler> tankControlers;
+    #endregion
     
-    int selectedOponent;
-    int CurrentTank=0;
-    bool tileIsSelected=false;
-    [SerializeField]
-    Vector2Int SelectedTile;
-    bool inTextField;
-    void Awake()
-    {
-        current=this;
-        mainCamera=Camera.main;
-    }
+    #region UI Refrences
+        public TextMeshProUGUI HealthText;
+        public TextMeshProUGUI ActionPointsText;
+        public TMP_InputField NameInput;
+        public Image ColorImage;
+        public Transform SelectedTileUI;
+        public Transform CurrentTileUI;
+        public GameObject ConfirmationObject;
+        public TextMeshProUGUI ConfirmationText;
+        public TextMeshProUGUI ConfirmationCostText;
+        public GameObject OponentMenu;
+        public TextMeshProUGUI OpoenentMenuName;
+        public TextMeshProUGUI OpoenentMenuHealthValue;
+        public TextMeshProUGUI OpoenentMeneActionPointsValue;
+        public TextMeshProUGUI OpoenentMeneRangeValue;
+        public TextMeshProUGUI OpoenentMeneTradingAmountValue;
+        public TextMeshProUGUI OpoenentMeneDamageAmountValue;
+        public Slider TradingAmountSlider;
+        public Slider DamageAmountSlider;
+        public GameObject AlertPannel;
+        public TextMeshProUGUI AlertPannelText;
+        public TextMeshProUGUI AlertPannelButtonText;
+        public GameObject YouPannelObject;
+        public TextMeshProUGUI CurrentRangeText;
+        public TextMeshProUGUI UpgradeCosts;
+        public TextMeshProUGUI SwichBackText;
+        public TextMeshProUGUI SwichForwardText;
+    #endregion
+    
+    #region Stats Variables
+        [Header("Stats")]
+        public int TradingFine;
+        public int ActionPointsGainedPerRound;
+        public bool TradingEnabled;
+        public bool UpgradeEnabled;
+        public int UpgradeRangeCost;
+        public int MaxRange;
+        public int MovementCost;
+        public int AttackCost;
+        public int HealthGainedOnKill;
+        public float ActionPointSyphonPercent;
+    #endregion
 
-    // Update is called once per frame
-    void Update()
-    {
-        DebugPos=GetMousePos();
-        Inputs();
-        UpdateUI();
-    }
-    void OpenConfimationPanel(string MainText,string SecondaryText,int type)
-    {
-        ConfirmationObject.SetActive(true);
-        ConfirmationPanelOpen=true;
-        ConfirmationPannelType=type;
+    #region Other Public Stats
+        [Header("Camera Stats")]
+        public float BaseCameraSpeed;
+        public Vector2 MinMaxCameraZoom;
+        public float CameraZoomSensitivity;
+        [Header("Misc")]
+        public bool GameStarted;
+    #endregion
+
+    #region Private Var
+        [Header("Host Stats")]
+        [SerializeField]
+        float CameraLerpTime;
+        [SerializeField]
+        float CameraLerpIncrements;
+        [SerializeField]
+        float ZoomAmount;
+        [SerializeField]
+        float StartingCameraZoom;
+        Vector2 OldMousePos;
+        bool RightMouseDown;
+        bool YouPannelOpen;
+        bool ConfirmationPanelOpen;
+        int ConfirmationPannelType;
+        bool AlertPannelOpen;
+        bool OponentMenuOpen;
         
-        ConfirmationText.text=MainText;
-        ConfirmationCostText.text=SecondaryText;
-    }
-    void AlertMenuOpen(string MainText,string ButtonText)
-    {
-        AlertPannelOpen=true;
-        AlertPannel.SetActive(true);
-        AlertPannelText.text=MainText;
-        AlertPannelButtonText.text=ButtonText;
-    }
-    void NextRound()
-    {
-        foreach (var item in tankControlers)
+        int selectedOponent;
+        int CurrentTank=0;
+        bool tileIsSelected=false;
+        Vector2Int SelectedTile;
+        bool inTextField;
+    #endregion
+    
+    #region Built in Func
+        void Awake()
         {
-            item.NextRound(ActionPointsGainedPerRound);
+            current=this;
+            mainCamera=Camera.main;
         }
-    }
-    void UpdateUI()
-    {
-        HealthText.text=tankControlers[CurrentTank].Health.ToString();
-        ActionPointsText.text=tankControlers[CurrentTank].ActionPoints.ToString();
-        NameInput.text=tankControlers[CurrentTank].Name;
-        ColorImage.color=tankControlers[CurrentTank].TankColor;
-        if(tileIsSelected)
+        void Start()
         {
-            SelectedTileUI.gameObject.SetActive(true);
-            SelectedTileUI.GetComponent<SpriteRenderer>().color=new Color(tankControlers[CurrentTank].TankColor.r,tankControlers[CurrentTank].TankColor.g,tankControlers[CurrentTank].TankColor.b,0.5f);
-            Vector3 tilePos=tm.CellToWorld(new Vector3Int(SelectedTile.x,SelectedTile.y,0));
-            SelectedTileUI.position=new Vector3(tilePos.x+0.5f,tilePos.y+0.5f,0);
-        }
-        else
-        {
-            SelectedTileUI.gameObject.SetActive(false);
+            mainCamera.orthographicSize=StartingCameraZoom;
         }
 
-        CurrentTileUI.GetComponent<SpriteRenderer>().color=new Color(tankControlers[CurrentTank].TankColor.r,tankControlers[CurrentTank].TankColor.g,tankControlers[CurrentTank].TankColor.b,0.4f);
-        Vector3 MouseTilPos=tm.CellToWorld(new Vector3Int(GetMousePos().x,GetMousePos().y,0));
-        CurrentTileUI.position=new Vector3(MouseTilPos.x+0.5f,MouseTilPos.y+0.5f,0);
+        void Update()
+        {
+            Inputs();
+            UpdateUI();
+        }   
+    #endregion
 
-        if(YouPannelOpen)
+    #region UI
+        void UpdateUI()
         {
-            //Show YOu Pannel
-            YouPannelObject.SetActive(true);
-            //Put Range
-            CurrentRangeText.text="Range: "+tankControlers[CurrentTank].TankRange.ToString();
-            //Price
-            UpgradeCosts.text="Upgrade Costs: "+UpgradeRangeCost.ToString();
-        }
-        else
-        {
-            YouPannelObject.SetActive(false);
-        }
-        if(OponentMenuOpen)
-        {
-            //Show Meny
-            OponentMenu.SetActive(true);
-            //Show oponent stats
-            OpoenentMenuName.text=tankControlers[selectedOponent].Name;
-            OpoenentMenuName.color=tankControlers[selectedOponent].TankColor;
-            OpoenentMenuHealthValue.text=tankControlers[selectedOponent].Health.ToString();
-            OpoenentMeneActionPointsValue.text=tankControlers[selectedOponent].ActionPoints.ToString();
-            OpoenentMeneRangeValue.text=tankControlers[selectedOponent].TankRange.ToString();
-            //Slider Stuff
-            OpoenentMeneTradingAmountValue.text=TradingAmountSlider.value.ToString();
-            OpoenentMeneDamageAmountValue.text=DamageAmountSlider.value.ToString();
-            //Max Value for Sliders
-            TradingAmountSlider.maxValue=tankControlers[CurrentTank].ActionPoints;
-            DamageAmountSlider.maxValue=Mathf.Min(tankControlers[selectedOponent].Health, Mathf.FloorToInt(tankControlers[CurrentTank].ActionPoints/AttackCost));
-        }
-        else
-        {
-            OponentMenu.SetActive(false);
-        }
+            if(GameStarted)
+            {
+                #region HUD
+                    HealthText.text=tankControlers[CurrentTank].Health.ToString();
+                    ActionPointsText.text=tankControlers[CurrentTank].ActionPoints.ToString();
+                    NameInput.text=tankControlers[CurrentTank].Name;
+                    ColorImage.color=tankControlers[CurrentTank].TankColor;
+                #endregion
 
-    }
-    public void ConfirmationButtonPressed(bool Accepted)
-    {
-        ConfirmationPanelOpen=false;
-        
-        if(ConfirmationPannelType==0)
-        {
-            //Movement
-            if(Accepted)
-            {
-                int movCost=CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost);
-                tankControlers[CurrentTank].Move(SelectedTile,movCost);
-                Debug.Log(movCost);
-                tileIsSelected=false;
-            }
-        }
-        else if(ConfirmationPannelType==1)
-        {
-            if(Accepted)
-            {
-                tankControlers[CurrentTank].Attack((int)DamageAmountSlider.value,AttackCost);
-                tankControlers[selectedOponent].BeAttack((int)DamageAmountSlider.value);
-            }
-        }
-        else if(ConfirmationPannelType==2)
-        {
-            //trade
-            if(Accepted)
-            {
-                tankControlers[CurrentTank].Donate((int)TradingAmountSlider.value);
-                tankControlers[selectedOponent].ReciveActionPoints((int)TradingAmountSlider.value);
-            }
-        }
-        else if(ConfirmationPannelType==3)
-        {
-            //Range Upgrade
-            if(Accepted)
-            {
-                tankControlers[CurrentTank].UpgradeRange(UpgradeRangeCost);
-            }
-        }
-        ConfirmationObject.SetActive(false);
-    }
-    public void ChangeTankName()
-    {
-        tankControlers[CurrentTank].Name=NameInput.text;
-    }
-
-    Vector2Int GetMousePos()
-    {
-        Vector2 cameraPos=mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        return new Vector2Int(tm.WorldToCell(cameraPos).x,tm.WorldToCell(cameraPos).y);
-    }
-
-    int CheckMovementCost(Vector2Int a,Vector2Int b,int MovemetnCost)
-    {
-        int TilesMoved=Mathf.Max(Mathf.Abs(a.y-b.y),Mathf.Abs(a.x-b.x));
-
-        return TilesMoved*MovemetnCost;
-    }
-    public void TextSelected()
-    {
-        inTextField=true;
-    }
-    public void TextUnselected()
-    {
-        inTextField=false;
-    }
-    public void AttackButtonPressed()
-    {
-        if(DistanceBetweenPos(tankControlers[CurrentTank].Pos,tankControlers[selectedOponent].Pos)<=tankControlers[CurrentTank].TankRange)
-        {
-            //In range to attack
-            //instant Attack
-            OpenConfimationPanel("Are you sure you want to attack","Cost: "+((int)DamageAmountSlider.value*AttackCost).ToString(),1);
-            
-        }
-        else
-        {
-            //Not in range to attack
-            AlertMenuOpen("Player Out of Range","OK");
-        }
-    }
-    public void UpgradeButtonPressed()
-    {
-        if(UpgradeEnabled)
-        {
-            if(tankControlers[CurrentTank].TankRange<MaxRange||MaxRange==-1)
-            {
-                if(tankControlers[CurrentTank].ActionPoints>=UpgradeRangeCost)
-                {
-                    OpenConfimationPanel("Are you sure you want to upgrade","Cost: "+UpgradeRangeCost.ToString(),3);
-                }
-                else
-                {
-                    AlertMenuOpen("Can't afford Upgrade","OK");
-                }
-            }
-            else
-            {
-                AlertMenuOpen("You are at Max Range","Ok");
-            }
-        }
-        else
-        {
-            AlertMenuOpen("Upgrading Range is Not Enabled","OK");
-        }
-        
-    }
-    public void DonateButtonPressed()
-    {
-        if(TradingEnabled)
-        {
-            OpenConfimationPanel("Are you sure you want to Trade","Cost: "+((int)TradingAmountSlider.value*AttackCost).ToString(),2);
-        }
-        else
-        {
-            AlertMenuOpen("Trading is disabled","OK");
-        }
-        
-    }
-    int DistanceBetweenPos(Vector2Int a,Vector2Int b)
-    {
-        int distance=Mathf.Max(Mathf.Abs(a.y-b.y),Mathf.Abs(a.x-b.x));
-
-        return distance;
-    }
-    public void CloseAlertMenu()
-    {
-        AlertPannelOpen=false;
-        AlertPannel.SetActive(false);
-    }
-    public void Inputs()
-    {
-        //Q and E
-        if(Input.GetKeyDown(KeyCode.Q)&&!inTextField)
-        {
-            CurrentTank-=1;
-            if(CurrentTank<0)
-            {
-                tileIsSelected=false;
-                CurrentTank=tankControlers.Count-1;
-            }
-
-        }
-        if(Input.GetKeyDown(KeyCode.Tab))
-        {
-            NextRound();
-        }
-        if(Input.GetKeyDown(KeyCode.E)&&!inTextField)
-        {
-            CurrentTank+=1;
-            if(CurrentTank>tankControlers.Count-1)
-            {
-                tileIsSelected=false;
-                CurrentTank=0;
-            }
-        }
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            if(AlertPannelOpen)
-            {
-                CloseAlertMenu();
-            }
-        }
-        if(Input.GetKeyDown(KeyCode.Escape))
-        {
-            if(OponentMenuOpen)
-            {
-                OponentMenuOpen=false;
-            }
-            if(YouPannelOpen)
-            {
-                YouPannelOpen=false;
-            }
-            if(AlertPannelOpen)
-            {
-                CloseAlertMenu();
-            }
-        }
-        //Click
-        if(Input.GetKeyDown(KeyCode.Mouse0)&&!ConfirmationPanelOpen&&!OponentMenuOpen&&!AlertPannelOpen&&!YouPannelOpen)
-        {
-            if(GetMousePos()==SelectedTile&&tileIsSelected)
-            {
-                if(tm.GetTile(new Vector3Int(SelectedTile.x,SelectedTile.y,0))==EmptyTile)
-                {
-                    if(tankControlers[CurrentTank].ActionPoints>=CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost))
+                #region Selected TIle UI
+                    if(tileIsSelected)
                     {
-                        OpenConfimationPanel("Are you sure you want to move","Cost: "+CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost).ToString(),0);
+                        SelectedTileUI.gameObject.SetActive(true);
+                        SelectedTileUI.GetComponent<SpriteRenderer>().color=new Color(tankControlers[CurrentTank].TankColor.r,tankControlers[CurrentTank].TankColor.g,tankControlers[CurrentTank].TankColor.b,0.5f);
+                        Vector3 tilePos=tm.CellToWorld(new Vector3Int(SelectedTile.x,SelectedTile.y,0));
+                        SelectedTileUI.position=new Vector3(tilePos.x+0.5f,tilePos.y+0.5f,0);
                     }
                     else
                     {
-                        AlertMenuOpen("You can't afford to move here\nCost: "+CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost).ToString()+" You Have: "+tankControlers[CurrentTank].ActionPoints.ToString(),"OK");
+                        SelectedTileUI.gameObject.SetActive(false);
+                    }
+                #endregion
+                
+
+                #region CurrentTileUI
+                    CurrentTileUI.GetComponent<SpriteRenderer>().color=new Color(tankControlers[CurrentTank].TankColor.r,tankControlers[CurrentTank].TankColor.g,tankControlers[CurrentTank].TankColor.b,0.4f);
+                    Vector3 MouseTilPos=tm.CellToWorld(new Vector3Int(GetMousePos().x,GetMousePos().y,0));
+                    CurrentTileUI.position=new Vector3(MouseTilPos.x+0.5f,MouseTilPos.y+0.5f,0);
+                #endregion
+                
+
+                #region You Pannel
+                    if(YouPannelOpen)
+                    {
+                        //Show YOu Pannel
+                        YouPannelObject.SetActive(true);
+                        //Put Range
+                        CurrentRangeText.text="Range: "+tankControlers[CurrentTank].TankRange.ToString();
+                        //Price
+                        UpgradeCosts.text="Upgrade Costs: "+UpgradeRangeCost.ToString();
+                    }
+                    else
+                    {
+                        YouPannelObject.SetActive(false);
+                    }
+                #endregion
+                
+
+                #region Oponent Menu
+                    
+                    if(OponentMenuOpen)
+                    {
+                        //Show Meny
+                        OponentMenu.SetActive(true);
+                        //Show oponent stats
+                        OpoenentMenuName.text=tankControlers[selectedOponent].Name;
+                        OpoenentMenuName.color=tankControlers[selectedOponent].TankColor;
+                        OpoenentMenuHealthValue.text=tankControlers[selectedOponent].Health.ToString();
+                        OpoenentMeneActionPointsValue.text=tankControlers[selectedOponent].ActionPoints.ToString();
+                        OpoenentMeneRangeValue.text=tankControlers[selectedOponent].TankRange.ToString();
+                        //Slider Stuff
+                        OpoenentMeneTradingAmountValue.text=TradingAmountSlider.value.ToString();
+                        OpoenentMeneDamageAmountValue.text=DamageAmountSlider.value.ToString();
+                        //Max Value for Sliders
+                        TradingAmountSlider.maxValue=Mathf.Max(tankControlers[CurrentTank].ActionPoints-TradingFine,0);
+                        DamageAmountSlider.maxValue=Mathf.Min(tankControlers[selectedOponent].Health, Mathf.FloorToInt(tankControlers[CurrentTank].ActionPoints/AttackCost));
+                    }
+                    else
+                    {
+                        OponentMenu.SetActive(false);
+                    }
+                #endregion
+                
+
+                #region Swich Tank button Text
+                    if(CurrentTank==0)
+                    {
+                        SwichBackText.text=tankControlers[tankControlers.Count-1].Name;
+                        SwichBackText.color=tankControlers[tankControlers.Count-1].TankColor;
+                    }
+                    else
+                    {
+                        SwichBackText.text=tankControlers[CurrentTank-1].Name;
+                        SwichBackText.color=tankControlers[CurrentTank-1].TankColor; 
+                    }
+
+                    if(CurrentTank==tankControlers.Count-1)
+                    {
+                        SwichForwardText.text=tankControlers[0].Name;
+                        SwichForwardText.color=tankControlers[0].TankColor;
+                    }
+                    else
+                    {
+                        SwichForwardText.text=tankControlers[CurrentTank+1].Name;
+                        SwichForwardText.color=tankControlers[CurrentTank+1].TankColor;
+                    }
+                #endregion
+                
+                #region Camera Zoom
+                    mainCamera.orthographicSize=StartingCameraZoom*ZoomAmount;
+                #endregion
+            }
+            
+        }
+        
+        #region Confirmation Pannel
+            void OpenConfimationPanel(string MainText,string SecondaryText,int type)
+            {
+                ConfirmationObject.SetActive(true);
+                ConfirmationPanelOpen=true;
+                ConfirmationPannelType=type;
+                
+                ConfirmationText.text=MainText;
+                ConfirmationCostText.text=SecondaryText;
+            }
+            public void ConfirmationButtonPressed(bool Accepted)
+            {
+                ConfirmationPanelOpen=false;
+                
+                if(ConfirmationPannelType==0)
+                {
+                    //Movement
+                    if(Accepted)
+                    {
+                        int movCost=CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost);
+                        tankControlers[CurrentTank].Move(SelectedTile,movCost);
+                        Debug.Log(movCost);
+                        tileIsSelected=false;
                     }
                 }
-                else 
+                else if(ConfirmationPannelType==1)
                 {
-                    int x=0;
-                    while (x<tankControlers.Count)
+                    //Attack
+                    if(Accepted)
                     {
-                        if(tankControlers[x].Pos==SelectedTile)
-                        {
-                            if(x!=CurrentTank)
-                            {
-                                selectedOponent=x;
-                                OponentMenuOpen=true;
-                            }
-                            else
-                            {
-                                YouPannelOpen=true;   
-                            }
-                            
-                            
-                            
-                        }
+                        tankControlers[CurrentTank].Attack((int)DamageAmountSlider.value,AttackCost);
+                        tankControlers[selectedOponent].BeAttack((int)DamageAmountSlider.value);
 
-                        x++;
+                        //Player Killed
+                        if(tankControlers[selectedOponent].Dead)
+                        {
+                            tankControlers[CurrentTank].Heal(HealthGainedOnKill);
+                            tankControlers[CurrentTank].ReciveActionPoints(Mathf.RoundToInt(tankControlers[selectedOponent].ActionPoints*ActionPointSyphonPercent));
+                        }
                     }
+                }
+                else if(ConfirmationPannelType==2)
+                {
+                    //trade
+                    if(Accepted)
+                    {
+                        tankControlers[CurrentTank].Donate((int)TradingAmountSlider.value+TradingFine);
+                        tankControlers[selectedOponent].ReciveActionPoints((int)TradingAmountSlider.value);
+                    }
+                }
+                else if(ConfirmationPannelType==3)
+                {
+                    //Range Upgrade
+                    if(Accepted)
+                    {
+                        tankControlers[CurrentTank].UpgradeRange(UpgradeRangeCost);
+                    }
+                }
+                ConfirmationObject.SetActive(false);
+            }
+        #endregion
+        
+        #region Oponent Menu
+            public void AttackButtonPressed()
+            {
+                if(!tankControlers[CurrentTank].Dead)
+                {
+                    if(DistanceBetweenPos(tankControlers[CurrentTank].Pos,tankControlers[selectedOponent].Pos)<=tankControlers[CurrentTank].TankRange)
+                    {
+                        OpenConfimationPanel("Are you sure you want to attack","Cost: "+((int)DamageAmountSlider.value*AttackCost).ToString(),1);
+                    }
+                    else
+                    {
+                        AlertMenuOpen("Player Out of Range","OK");
+                    }
+                }
+                else
+                {
+                    AlertMenuOpen("You Dead","F");
+                }
+                
+            }
+
+            public void DonateButtonPressed()
+            {
+                if(!tankControlers[CurrentTank].Dead)
+                {
+                    if(TradingEnabled)
+                    {
+                        OpenConfimationPanel("Are you sure you want to Trade","Cost: "+((int)TradingAmountSlider.value*AttackCost).ToString(),2);
+                    }
+                    else
+                    {
+                        AlertMenuOpen("Trading is disabled","OK");
+                    }
+                }
+                else
+                {
+                    AlertMenuOpen("You Dead","F");
+                }
+            }
+        #endregion
+
+        public void UpgradeButtonPressed()
+        {
+            if(UpgradeEnabled)
+            {
+                if(!tankControlers[CurrentTank].Dead)
+                {
+                    if(tankControlers[CurrentTank].TankRange<MaxRange||MaxRange==-1)
+                    {
+                        if(tankControlers[CurrentTank].ActionPoints>=UpgradeRangeCost)
+                        {
+                            OpenConfimationPanel("Are you sure you want to upgrade","Cost: "+UpgradeRangeCost.ToString(),3);
+                        }
+                        else
+                        {
+                            AlertMenuOpen("Can't afford Upgrade","OK");
+                        }
+                    }
+                    else
+                    {
+                        AlertMenuOpen("You are at Max Range","Ok");
+                    }
+                }
+                else
+                {
+                    AlertMenuOpen("You Dead","F");
                 }
             }
             else
             {
-                //Select TIle
-                SelectedTile=GetMousePos();
-                tileIsSelected=true;
+                AlertMenuOpen("Upgrading Range is Not Enabled","OK");
+            }
+            
+        }
+        
+        void AlertMenuOpen(string MainText,string ButtonText)
+        {
+            AlertPannelOpen=true;
+            AlertPannel.SetActive(true);
+            AlertPannelText.text=MainText;
+            AlertPannelButtonText.text=ButtonText;
+        }
+        public void CloseAlertMenu()
+        {
+            AlertPannelOpen=false;
+            AlertPannel.SetActive(false);
+        }
+        public void TextSelected()
+        {
+            inTextField=true;
+        }
+        public void TextUnselected()
+        {
+            inTextField=false;
+        }
+    #endregion
+    
+    #region Game Mechainics
+        public void MoveCam()
+        {
+            StartCoroutine(CameraLerpToTank(0,CameraLerpIncrements));
+        }
+        public void Inputs()
+        {
+            if(GameStarted)
+            {
+                //Yes / Accept Input
+                if(Input.GetKeyDown(KeyCode.Space))
+                {
+                    if(AlertPannelOpen)
+                    {
+                        CloseAlertMenu();
+                    }
+                }
+
+                // Exit Menu / no
+                if(Input.GetKeyDown(KeyCode.Escape))
+                {
+                    if(OponentMenuOpen)
+                    {
+                        OponentMenuOpen=false;
+                    }
+                    if(YouPannelOpen)
+                    {
+                        YouPannelOpen=false;
+                    }
+                    if(AlertPannelOpen)
+                    {
+                        CloseAlertMenu();
+                    }
+                }
+                
+                //No Pannels Open or text fields
+                if(!ConfirmationPanelOpen&&!OponentMenuOpen&&!AlertPannelOpen&&!YouPannelOpen&&!inTextField)
+                {
+                    #region Swiching Inputs
+                        if(Input.GetKeyDown(KeyCode.Q))
+                        {
+                            ChangeTank(false);
+                        }
+                        if(Input.GetKeyDown(KeyCode.E))
+                        {
+                            ChangeTank(true);
+                        }
+                    #endregion
+                    
+                    //next Round
+                    if(Input.GetKeyDown(KeyCode.Tab))
+                    {
+                        NextRound();
+                    }
+
+                    //Teleport to Current Tank
+                    if(Input.GetKeyDown(KeyCode.F))
+                    {
+                        StartCoroutine(CameraLerpToTank(CameraLerpTime,CameraLerpIncrements));
+                    }
+
+                    //Left Click
+                    if(Input.GetKeyDown(KeyCode.Mouse0))
+                    {
+                        //Clicked Slected TIle
+                        if(GetMousePos()==SelectedTile&&tileIsSelected)
+                        {
+                            //Tile is Empty
+                            if(tm.GetTile(new Vector3Int(SelectedTile.x,SelectedTile.y,0))==EmptyTile)
+                            {
+                                //Not dead
+                                if(!tankControlers[CurrentTank].Dead)
+                                {
+                                   //Can Afford to Move
+                                    if(tankControlers[CurrentTank].ActionPoints>=CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost))
+                                    {
+                                        OpenConfimationPanel("Are you sure you want to move","Cost: "+CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost).ToString(),0);
+                                    }
+                                    //Can't Afford to move
+                                    else
+                                    {
+                                        AlertMenuOpen("You can't afford to move here\nCost: "+CheckMovementCost(tankControlers[CurrentTank].Pos,SelectedTile,MovementCost).ToString()+" You Have: "+tankControlers[CurrentTank].ActionPoints.ToString(),"OK");
+                                    } 
+                                }
+                                else
+                                {
+                                    AlertMenuOpen("You Dead","F");
+                                }
+                                
+                            }
+                            //Tile has Tank
+                            else 
+                            {
+                                //Check Who it is
+                                int x=0;
+                                while (x<tankControlers.Count)
+                                {
+                                    //selected tank is correct tank
+                                    if(tankControlers[x].Pos==SelectedTile)
+                                    {
+                                        //Selectd tank is Oponent
+                                        if(x!=CurrentTank)
+                                        {
+                                            selectedOponent=x;
+                                            OponentMenuOpen=true;
+                                            break;
+                                        }
+                                        //Selectd tasnk is self
+                                        else
+                                        {
+                                            YouPannelOpen=true;  
+                                            break; 
+                                        }
+                                    }
+
+                                    x++;
+                                }
+                            }
+                        }
+                        //Clicked unSelcted tile
+                        else
+                        {
+                            //Select TIle
+                            SelectedTile=GetMousePos();
+                            tileIsSelected=true;
+                        }
+                    }
+
+                    //Right Mouse Down
+                    if(Input.GetKey(KeyCode.Mouse1))
+                    {
+                        //Right mouse down Last frame
+                        if(RightMouseDown)
+                        {
+                            Vector3 deltaMousePos=mainCamera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,Input.mousePosition.y))- mainCamera.ScreenToWorldPoint(OldMousePos);
+                            OldMousePos= Input.mousePosition;
+
+
+                            mainCamera.transform.position-=deltaMousePos;
+                        }
+                        //Right Mouse not down last farme
+                        else
+                        {
+                            RightMouseDown=true;
+                            OldMousePos=Input.mousePosition;
+                        }
+                    }
+                    //Right Mouse not down
+                    else
+                    {
+                        RightMouseDown=false;
+                    }
+
+                    #region Wasd And Arrow keys
+                        Vector2 mov=new Vector2();
+
+                        //Up
+                        if(Input.GetKey(KeyCode.W)||Input.GetKey(KeyCode.UpArrow))
+                        {
+                            mov.y++;
+                        }
+                        //Down
+                        if(Input.GetKey(KeyCode.S)||Input.GetKey(KeyCode.DownArrow))
+                        {
+                            mov.y--;
+                        }
+                        //Right
+                        if(Input.GetKey(KeyCode.D)||Input.GetKey(KeyCode.RightArrow))
+                        {
+                            mov.x++;
+                        }
+                        //LEft
+                        if(Input.GetKey(KeyCode.A)||Input.GetKey(KeyCode.LeftArrow))
+                        {
+                            mov.x--;
+                        }
+
+                        mainCamera.GetComponent<Rigidbody2D>().velocity=mov.normalized*BaseCameraSpeed*ZoomAmount;
+                    #endregion
+
+                    #region  Camera Zoom
+                        //Zoom input 
+                        if(Input.mouseScrollDelta!=new Vector2())
+                        {
+                            Vector2 scroll=Input.mouseScrollDelta;
+
+                            ZoomAmount+=ZoomAmount*scroll.y*CameraZoomSensitivity;
+                        }
+
+                        //min Zoom
+                        if(ZoomAmount<=MinMaxCameraZoom.x)
+                        {
+                            ZoomAmount=MinMaxCameraZoom.x;
+                        }
+
+                        //max Zoom
+                        if(ZoomAmount>=MinMaxCameraZoom.y)
+                        {
+                            ZoomAmount=MinMaxCameraZoom.y;
+                        }
+                    #endregion
+                }
+            }
+            
+            
+        }
+        public void ChangeTank(bool ChangeForward)
+        {
+            if(ChangeForward)
+            {
+                CurrentTank+=1;
+                if(CurrentTank>tankControlers.Count-1)
+                {
+                    tileIsSelected=false;
+                    CurrentTank=0;
+                }
+                StartCoroutine(CameraLerpToTank(CameraLerpTime,CameraLerpIncrements));
+            }
+            else
+            {
+                CurrentTank-=1;
+                if(CurrentTank<0)
+                {
+                    tileIsSelected=false;
+                    CurrentTank=tankControlers.Count-1;
+                }
+                StartCoroutine(CameraLerpToTank(CameraLerpTime,CameraLerpIncrements));
             }
         }
-    }
+        IEnumerator CameraLerpToTank(float Time,float timeBetweenRuns)
+        {
+            Vector2 TankPosition=tm.CellToWorld(new Vector3Int(tankControlers[CurrentTank].Pos.x,tankControlers[CurrentTank].Pos.y,0));
+            Vector3 LerpTo=new Vector3(TankPosition.x,TankPosition.y,mainCamera.transform.position.z);
+
+            float x=timeBetweenRuns/Time;
+
+            if(Time==0)
+            {
+                x=1;
+            }
+            while (true)
+            {
+                mainCamera.transform.position=Vector3.Lerp(mainCamera.transform.position,LerpTo,x);
+                x+=timeBetweenRuns/Time;
+
+                if(x>=1)
+                {
+                    break;
+                }
+
+                yield return new WaitForSeconds(timeBetweenRuns);
+            }
+        }
+        void NextRound()
+        {
+            foreach (var item in tankControlers)
+            {
+                item.NextRound(ActionPointsGainedPerRound);
+            }
+        }
+
+        public void ChangeTankName()
+        {
+            tankControlers[CurrentTank].Name=NameInput.text;
+        }
+
+        #region Calkulations
+            Vector2Int GetMousePos()
+            {
+                Vector2 cameraPos=mainCamera.ScreenToWorldPoint(Input.mousePosition);
+                return new Vector2Int(tm.WorldToCell(cameraPos).x,tm.WorldToCell(cameraPos).y);
+            }
+
+            int CheckMovementCost(Vector2Int a,Vector2Int b,int MovemetnCost)
+            {
+                int TilesMoved=Mathf.Max(Mathf.Abs(a.y-b.y),Mathf.Abs(a.x-b.x));
+
+                return TilesMoved*MovemetnCost;
+            }
+            
+            
+            int DistanceBetweenPos(Vector2Int a,Vector2Int b)
+            {
+                int distance=Mathf.Max(Mathf.Abs(a.y-b.y),Mathf.Abs(a.x-b.x));
+
+                return distance;
+            }
+        #endregion
+    #endregion
+    
+
 }
