@@ -17,10 +17,11 @@ public class SaveControler : MonoBehaviour
     }
     void Start()
     {
+        /*
         if(SceneTransferScript.sceneTransferScript.LoadSaveGame)
         {
             LoadGameData(SceneTransferScript.sceneTransferScript.SaveName);
-        }
+        }*/
     }
 
     public void SaveGameData(string SaveName)
