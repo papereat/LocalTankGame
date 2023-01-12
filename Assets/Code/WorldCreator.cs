@@ -219,6 +219,7 @@ public class WorldCreator : MonoBehaviour
 
         public void CreateTilemap()
         {
+            Debug.Log("tes");
             for (int x = -worldSize.x; x < worldSize.x; x++)
             {
                 for (int y = -worldSize.y; y < worldSize.y; y++)

@@ -9,6 +9,8 @@ public class GameSaveData
 {
     #region Info Save Data
         public string Name;
+        public string Date;
+
     #endregion
     #region Host Save Data
         public Vector2Int worldSize;

@@ -15,23 +15,32 @@ public class SaveControler : MonoBehaviour
     {
         current=this;
     }
-
-    public void SaveGameData()
+    void Start()
     {
-        GameSaveData GSD = CreateGameSaveData();
-        Save(GSD,file);
+        if(SceneTransferScript.sceneTransferScript.LoadSaveGame)
+        {
+            LoadGameData(SceneTransferScript.sceneTransferScript.SaveName);
+        }
     }
-    public void LoadGameData()
+
+    public void SaveGameData(string SaveName)
+    {
+        GameSaveData GSD = CreateGameSaveData(SaveName);
+        Save(GSD,"Game Save/"+SaveName+".json");
+    }
+    public void LoadGameData(string SaveName)
     {
         GameSaveData GSD=new GameSaveData();
-        Load(GSD,file);
+        Load(GSD,"Game Save/"+SaveName+".json");
 
         StartGameData(GSD);
 
     }
     void StartGameData(GameSaveData GSD)
     {
-         #region Host Save Data
+       
+
+        #region Host Save Data
             HostControler.current.TradingFine=GSD.TradingFine;
             HostControler.current.ActionPointsGainedPerRound=GSD.ActionPointsGainedPerRound;
             HostControler.current.TradingEnabled=GSD.TradingEnabled;
@@ -56,6 +65,8 @@ public class SaveControler : MonoBehaviour
             }
             
         #endregion
+
+        HostControler.current.MoveCam();
     }
     GameObject CreateTank(TankSaveData TSD)
     {
@@ -74,12 +85,14 @@ public class SaveControler : MonoBehaviour
 
         return tankObj; 
     }
-    GameSaveData CreateGameSaveData()
+    GameSaveData CreateGameSaveData(string SaveName)
     {
         GameSaveData GSD = new GameSaveData();
 
         #region info Save Data
-            //Info Save Data
+            GSD.Name=SaveName;
+            System.DateTime moment= System.DateTime.Now;
+            GSD.Date=moment.Hour.ToString()+":"+moment.Minute.ToString()+":"+moment.Second.ToString()+" "+moment.Day+"/"+moment.Month+"/"+moment.Year;
         #endregion
 
         #region Host Save Data
@@ -93,6 +106,7 @@ public class SaveControler : MonoBehaviour
             GSD.AttackCost=HostControler.current.AttackCost;
             GSD.HealthGainedOnKill=HostControler.current.HealthGainedOnKill;
             GSD.ActionPointSyphonPercent=HostControler.current.ActionPointSyphonPercent;
+            GSD.worldSize=WorldCreator.current.worldSize;
         #endregion
 
         #region Tank Save Data
