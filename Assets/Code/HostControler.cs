@@ -59,6 +59,7 @@ public class HostControler : MonoBehaviour
         public int AttackCost;
         public int HealthGainedOnKill;
         public float ActionPointSyphonPercent;
+        public bool DeadPlayersDespawn;
     #endregion
 
     #region Other Public Stats
@@ -191,27 +192,46 @@ public class HostControler : MonoBehaviour
                 
 
                 #region Swich Tank button Text
+                    int BackIndex=0;
+                    int ForwardIndex=0;
                     if(CurrentTank==0)
                     {
-                        SwichBackText.text=tankControlers[tankControlers.Count-1].Name;
-                        SwichBackText.color=tankControlers[tankControlers.Count-1].TankColor;
+                        BackIndex=tankControlers.Count-1;
                     }
                     else
                     {
-                        SwichBackText.text=tankControlers[CurrentTank-1].Name;
-                        SwichBackText.color=tankControlers[CurrentTank-1].TankColor; 
+                        BackIndex=CurrentTank-1;
                     }
 
                     if(CurrentTank==tankControlers.Count-1)
                     {
-                        SwichForwardText.text=tankControlers[0].Name;
-                        SwichForwardText.color=tankControlers[0].TankColor;
+                        ForwardIndex=0;
                     }
                     else
                     {
-                        SwichForwardText.text=tankControlers[CurrentTank+1].Name;
-                        SwichForwardText.color=tankControlers[CurrentTank+1].TankColor;
+                        ForwardIndex=CurrentTank+1;
                     }
+
+                    while(tankControlers[BackIndex].Dead)
+                    {
+                        BackIndex--;
+                        if(BackIndex==-1)
+                        {
+                            BackIndex=tankControlers.Count-1;
+                        }
+                    }
+                    while(tankControlers[ForwardIndex].Dead)
+                    {
+                        ForwardIndex++;
+                        if(ForwardIndex==tankControlers.Count)
+                        {
+                            ForwardIndex=0;
+                        }
+                    }
+                    SwichBackText.text=tankControlers[BackIndex].Name;
+                    SwichBackText.color=tankControlers[BackIndex].TankColor;
+                    SwichForwardText.text=tankControlers[ForwardIndex].Name;
+                    SwichForwardText.color=tankControlers[ForwardIndex].TankColor;
                 #endregion
                 
                 #region Camera Zoom
@@ -385,10 +405,29 @@ public class HostControler : MonoBehaviour
         {
             StartCoroutine(CameraLerpToTank(0,CameraLerpIncrements));
         }
+        void SaveGame()
+        {
+            if(SaveControler.current.SavedName!=null)
+            {
+                SaveControler.current.SaveGameData(SaveControler.current.SavedName);
+                Debug.Log(SaveControler.current.SavedName);
+            }
+            else
+            {
+                string SaveName=Random.Range(-5000,5000).ToString();
+                SaveControler.current.SaveGameData(SaveName);
+                Debug.Log(SaveName);
+            }
+        }
         public void Inputs()
         {
             if(GameStarted)
             {
+                //Save game on Control+S
+                if(Input.GetKey(KeyCode.LeftControl)&&Input.GetKeyDown(KeyCode.S))
+                {
+                    SaveGame();
+                }
                 //Yes / Accept Input
                 if(Input.GetKeyDown(KeyCode.Space))
                 {
@@ -596,7 +635,15 @@ public class HostControler : MonoBehaviour
                     tileIsSelected=false;
                     CurrentTank=0;
                 }
-                StartCoroutine(CameraLerpToTank(CameraLerpTime,CameraLerpIncrements));
+                if(!tankControlers[CurrentTank].Dead)
+                {
+                    StartCoroutine(CameraLerpToTank(CameraLerpTime,CameraLerpIncrements));
+                }
+                else
+                {
+                    ChangeTank(true);
+                }
+                
             }
             else
             {
@@ -606,7 +653,14 @@ public class HostControler : MonoBehaviour
                     tileIsSelected=false;
                     CurrentTank=tankControlers.Count-1;
                 }
-                StartCoroutine(CameraLerpToTank(CameraLerpTime,CameraLerpIncrements));
+                if(!tankControlers[CurrentTank].Dead)
+                {
+                    StartCoroutine(CameraLerpToTank(CameraLerpTime,CameraLerpIncrements));
+                }
+                else
+                {
+                    ChangeTank(false);
+                }
             }
         }
         IEnumerator CameraLerpToTank(float Time,float timeBetweenRuns)

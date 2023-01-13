@@ -27,6 +27,6 @@ public class SaveChooserObject : MonoBehaviour
     }
     public void Load()
     {
-
+        MainMenuControler.current.LoadGame(fileName);
     }
 }

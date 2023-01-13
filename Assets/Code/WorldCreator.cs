@@ -36,6 +36,7 @@ public class WorldCreator : MonoBehaviour
         public Slider ActionPointSyphonPercent;
         public Toggle EnableDonating;
         public Toggle EnableRangeUpgrade;
+        public Toggle EnableDeadPlayersDespawning;
 
 
 

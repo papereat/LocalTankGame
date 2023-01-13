@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 
 public class SaveControler : MonoBehaviour
 {
+    public string SavedName;
     public GameObject TankPrefab;
     public Tilemap tm;
     public static SaveControler current;
@@ -17,22 +18,24 @@ public class SaveControler : MonoBehaviour
     }
     void Start()
     {
-        /*
+        
         if(SceneTransferScript.sceneTransferScript.LoadSaveGame)
         {
             LoadGameData(SceneTransferScript.sceneTransferScript.SaveName);
-        }*/
+        }
     }
 
     public void SaveGameData(string SaveName)
     {
         GameSaveData GSD = CreateGameSaveData(SaveName);
         Save(GSD,"Game Save/"+SaveName+".json");
+        SavedName=SaveName;
     }
     public void LoadGameData(string SaveName)
     {
         GameSaveData GSD=new GameSaveData();
-        Load(GSD,"Game Save/"+SaveName+".json");
+        Debug.Log("Game Save/"+SaveName);
+        Load(GSD,"Game Save/"+SaveName);
 
         StartGameData(GSD);
 
@@ -40,7 +43,7 @@ public class SaveControler : MonoBehaviour
     void StartGameData(GameSaveData GSD)
     {
        
-
+        SavedName=GSD.Name;
         #region Host Save Data
             HostControler.current.TradingFine=GSD.TradingFine;
             HostControler.current.ActionPointsGainedPerRound=GSD.ActionPointsGainedPerRound;

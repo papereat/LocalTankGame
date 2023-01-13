@@ -27,16 +27,41 @@ public class MainMenuControler : MonoBehaviour
             SceneTransferScript.sceneTransferScript=gameObject.AddComponent<SceneTransferScript>();
             FillOptionUI();
         }
-    #endregion
-
-    void FillOptionUI()
-    {
-        foreach (var item in new DirectoryInfo(Application.persistentDataPath+"/Game Save").GetFiles())
+        void Update()
         {
-            GameObject SaveChooser=Instantiate(SaveChooserPrefab,ContinueContent);
-            SaveChooser.GetComponent<SaveChooserObject>().fileName=item.Name;
+            Inputs();
         }
-    }
+    #endregion
+        
+
+            
+    #region Other Fuctnions
+        void Inputs()
+        {
+            if(Input.GetKeyDown(KeyCode.Escape))
+            {
+
+                //OptionsUI.SetActive(false);
+                ContinueUI.SetActive(false);
+                //CreditsUI.SetActive(false);
+            }
+        }
+        void FillOptionUI()
+        {
+            foreach (var item in new DirectoryInfo(Application.persistentDataPath+"/Game Save").GetFiles())
+            {
+                GameObject SaveChooser=Instantiate(SaveChooserPrefab,ContinueContent);
+                SaveChooser.GetComponent<SaveChooserObject>().fileName=item.Name;
+            }
+        }
+        public void LoadGame(string SaveName)
+        {
+            SceneTransferScript.sceneTransferScript.LoadSaveGame=true;
+            SceneTransferScript.sceneTransferScript.SaveName=SaveName;
+            SceneControler.current.SwichScene(1);
+        }
+    #endregion
+   
     #region Button Inputs Func
         public void StartButton()
         {
@@ -45,9 +70,7 @@ public class MainMenuControler : MonoBehaviour
         }
         public void ContinueButton()
         {
-            SceneTransferScript.sceneTransferScript.LoadSaveGame=true;
-            SceneTransferScript.sceneTransferScript.SaveName="Test";
-            SceneControler.current.SwichScene(1);
+            ContinueUI.SetActive(true);
         }
         public void OptionButton()
         {

@@ -14,6 +14,7 @@ public class TankControler : MonoBehaviour
         public TextMeshPro StatText;
         public Transform RangeShower;
         public TextMeshPro NameText;
+        public GameObject UIObject;
     #endregion
 
     #region Tank Stats
@@ -88,12 +89,19 @@ public class TankControler : MonoBehaviour
     
     #region Other Func
         void UpdateUI()
-        {
+        {   
+            
             StatText.text=ActionPoints.ToString()+":"+Health.ToString();
             RangeShower.localScale=new Vector3(1+2*TankRange,1+2*TankRange,1);
             RangeShower.GetComponent<SpriteRenderer>().color=new Color(TankColor.r,TankColor.g,TankColor.b,0.5f);
             NameText.text=Name;
             NameText.color=TankColor;
+            RangeShower.gameObject.SetActive(!Dead);
+            if(Dead&&HostControler.current.DeadPlayersDespawn)
+            {
+                tm.SetTile(new Vector3Int(Pos.x,Pos.y,0),EmptyTile);
+                UIObject.SetActive(false);
+            }
         }
         void DeathCheck()
         {
