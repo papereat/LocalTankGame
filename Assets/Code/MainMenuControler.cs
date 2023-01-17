@@ -41,7 +41,7 @@ public class MainMenuControler : MonoBehaviour
             if(Input.GetKeyDown(KeyCode.Escape))
             {
 
-                //OptionsUI.SetActive(false);
+                OptionsUI.SetActive(false);
                 ContinueUI.SetActive(false);
                 //CreditsUI.SetActive(false);
             }

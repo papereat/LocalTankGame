@@ -41,3 +41,9 @@ public class TankSaveData
         public int ActionPoints;
         public Color TankColor;
 }
+[System.Serializable]
+public class CameraSaveData
+{
+        public float BaseCameraSpeed;
+        public float CameraZoomSensitivity;
+}
