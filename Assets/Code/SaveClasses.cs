@@ -13,6 +13,10 @@ public class GameSaveData
 
     #endregion
     #region Host Save Data
+        public int MinDistFromOtherTanks;
+        public int StartingHealth;
+        public int StartingTankRange;
+        public int StartingActionPoints;
         public Vector2Int worldSize;
         public int TradingFine;
         public int ActionPointsGainedPerRound;

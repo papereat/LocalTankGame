@@ -19,6 +19,7 @@ public class HostControler : MonoBehaviour
     #endregion
     
     #region UI Refrences
+        public TextMeshProUGUI GameSavedText;
         public TextMeshProUGUI HealthText;
         public TextMeshProUGUI ActionPointsText;
         public TMP_InputField NameInput;
@@ -105,6 +106,11 @@ public class HostControler : MonoBehaviour
         void Start()
         {
             mainCamera.orthographicSize=StartingCameraZoom;
+            
+            CameraSaveData CSD=SaveControler.current.LoadCamData();
+
+            BaseCameraSpeed=CSD.BaseCameraSpeed;
+            CameraZoomSensitivity=CSD.CameraZoomSensitivity;
         }
 
         void Update()
@@ -405,6 +411,31 @@ public class HostControler : MonoBehaviour
         {
             StartCoroutine(CameraLerpToTank(0,CameraLerpIncrements));
         }
+        IEnumerator SaveGameText()
+        {
+            GameSavedText.color= new Color(GameSavedText.color.r,GameSavedText.color.g,GameSavedText.color.b,1);
+
+            float x=0;
+            while (true)
+            {
+                if(x<=1)
+                {
+                    x+=0.01f;
+                }
+                else
+                {
+                    if(GameSavedText.color.a<=0)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        GameSavedText.color= new Color(GameSavedText.color.r,GameSavedText.color.g,GameSavedText.color.b,GameSavedText.color.a-0.01f);
+                    }
+                }
+                yield return new WaitForSeconds(0.01f);
+            }
+        }
         void SaveGame()
         {
             if(SaveControler.current.SavedName!=null)
@@ -418,6 +449,7 @@ public class HostControler : MonoBehaviour
                 SaveControler.current.SaveGameData(SaveName);
                 Debug.Log(SaveName);
             }
+            StartCoroutine(SaveGameText());
         }
         public void Inputs()
         {

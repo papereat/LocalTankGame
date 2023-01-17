@@ -40,6 +40,28 @@ public class SaveControler : MonoBehaviour
         StartGameData(GSD);
 
     }
+    public void SaveSettingData(GameSaveData GSD)
+    {
+        Save(GSD,"Setting Save Data.json");
+    }
+    public GameSaveData LoadSettingData()
+    {
+        GameSaveData GSD=new GameSaveData();
+        Load(GSD,"Setting Save Data.json");
+
+        return GSD;
+    }
+    public void SaveCamData(CameraSaveData CSD)
+    {
+        Save(CSD,"Camera Save Data.json");
+    }
+    public CameraSaveData LoadCamData()
+    {
+        CameraSaveData CSD=new CameraSaveData();
+        Load(CSD,"Camera Save Data.json");
+
+        return CSD;
+    }
     void StartGameData(GameSaveData GSD)
     {
        

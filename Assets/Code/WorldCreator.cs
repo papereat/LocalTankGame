@@ -68,6 +68,30 @@ public class WorldCreator : MonoBehaviour
     {
         current=this;
     }
+    void Start()
+    {
+        
+        GameSaveData GSD=SaveControler.current.LoadSettingData();
+
+        WorldSizeX.text=GSD.worldSize.x.ToString();
+        WorldSizeY.text=GSD.worldSize.y.ToString();
+        MDFOT.text=GSD.MinDistFromOtherTanks.ToString();
+        MovemntCost.text=GSD.MovementCost.ToString();
+        Range.text=GSD.StartingTankRange.ToString();
+        AP.text=GSD.StartingActionPoints.ToString();
+        Health.text=GSD.StartingHealth.ToString();
+
+        AttackCost.text=GSD.AttackCost.ToString();
+        RangeUpgradeCost.text=GSD.UpgradeRangeCost.ToString();
+        MaxRange.text=GSD.MaxRange.ToString();
+        APGPR.text=GSD.ActionPointsGainedPerRound.ToString();
+        DonationFine.text=GSD.TradingFine.ToString();
+        HealthGaindPerKill.text=GSD.HealthGainedOnKill.ToString();
+        ActionPointSyphonPercent.value=GSD.ActionPointSyphonPercent;
+        EnableDonating.Value=GSD.TradingEnabled;
+        EnableRangeUpgrade.Value=GSD.UpgradeEnabled;
+
+    }
     #endregion
 
     public void SwichUI()
@@ -80,6 +104,9 @@ public class WorldCreator : MonoBehaviour
         {
             //Get Variables
             GetVariables();
+
+            //Save Settings
+            SaveSettingData();
 
             //Generate tile map
             CreateTilemap();
@@ -95,6 +122,28 @@ public class WorldCreator : MonoBehaviour
 
             //Move Cam
             HostControler.current.MoveCam();
+        }
+        void SaveSettingData()
+        {
+            GameSaveData GSD=new GameSaveData();
+            GSD.worldSize=new Vector2Int(int.Parse(WorldSizeX.text),int.Parse(WorldSizeY.text));
+            GSD.MinDistFromOtherTanks=int.Parse(MDFOT.text);
+            GSD.StartingHealth=int.Parse(Health.text);
+            GSD.StartingActionPoints=int.Parse(AP.text);
+            GSD.StartingTankRange=int.Parse(Range.text);
+
+            GSD.MovementCost=int.Parse(MovemntCost.text);
+            GSD.AttackCost=int.Parse(AttackCost.text);
+            GSD.UpgradeRangeCost=int.Parse(RangeUpgradeCost.text);
+            GSD.MaxRange=int.Parse(MaxRange.text);
+            GSD.ActionPointsGainedPerRound=int.Parse(APGPR.text);
+            GSD.TradingFine=int.Parse(DonationFine.text);
+            GSD.TradingEnabled=EnableDonating.Value;
+            GSD.UpgradeEnabled=EnableRangeUpgrade.Value;
+            GSD.HealthGainedOnKill=int.Parse(HealthGaindPerKill.text);
+            GSD.ActionPointSyphonPercent=ActionPointSyphonPercent.value;
+
+            SaveControler.current.SaveSettingData(GSD);
         }
         void CreateTanks()
         {

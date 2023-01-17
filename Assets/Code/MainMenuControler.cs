@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using TMPro;
+using UnityEngine.UI;
 
 public class MainMenuControler : MonoBehaviour
 {
@@ -14,7 +16,13 @@ public class MainMenuControler : MonoBehaviour
         public GameObject ContinueUI;
         public Transform ContinueContent;
         public GameObject CreditsUI;
+        public Slider baseCameSped;
+        public Slider ZoomSensitivty;
+        public TextMeshProUGUI BaseCamText;
+        public TextMeshProUGUI ZoomeSenstivitText;
     #endregion
+
+    public CameraSaveData CSD;
 
     #region Build in Func
         void Awake()
@@ -26,16 +34,35 @@ public class MainMenuControler : MonoBehaviour
         {
             SceneTransferScript.sceneTransferScript=gameObject.AddComponent<SceneTransferScript>();
             FillOptionUI();
+
+            CameraSaveData CSD=SaveControler.current.LoadCamData();
+            baseCameSped.value=CSD.BaseCameraSpeed;
+            ZoomSensitivty.value=CSD.CameraZoomSensitivity;
         }
         void Update()
         {
             Inputs();
+            UI();
         }
     #endregion
         
 
             
     #region Other Fuctnions
+        public void ApplyCamData()
+        {
+            CameraSaveData CSD=new CameraSaveData();
+            CSD.BaseCameraSpeed=baseCameSped.value;
+            CSD.CameraZoomSensitivity=ZoomSensitivty.value;
+
+            SaveControler.current.SaveCamData(CSD);
+        }
+        void UI()
+        {
+            //Options Menu
+            BaseCamText.text="Base Camera Speed: "+baseCameSped.value.ToString();
+            ZoomeSenstivitText.text="Camera Zoom Sensitivity: "+ZoomSensitivty.value.ToString();
+        }
         void Inputs()
         {
             if(Input.GetKeyDown(KeyCode.Escape))
@@ -43,7 +70,7 @@ public class MainMenuControler : MonoBehaviour
 
                 OptionsUI.SetActive(false);
                 ContinueUI.SetActive(false);
-                //CreditsUI.SetActive(false);
+                CreditsUI.SetActive(false);
             }
         }
         void FillOptionUI()
@@ -76,7 +103,10 @@ public class MainMenuControler : MonoBehaviour
         {
             OptionsUI.SetActive(true);
         }
-        public void CreditButton(){}
+        public void CreditButton()
+        {
+            CreditsUI.SetActive(true);
+        }
         public void QuitButton()
         {
             Application.Quit();
